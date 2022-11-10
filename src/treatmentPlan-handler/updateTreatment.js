@@ -1,18 +1,37 @@
-const secrets = require('../secret');
 const { Pool } = require('pg');
 const { QUERIES } = require('../constants');
+
+const AWS = require('aws-sdk');
+const region = 'us-east-1';
+var dbCredential = {};
+
+const client = new AWS.SecretsManager({
+  region
+});
+
+client.getSecretValue({ SecretId: 'dev/postgres/codelinc/db' }, function (err, data) {
+  if (err) {
+    if (err.code === 'DecryptionFailureException') { throw err; } else if (err.code === 'InternalServiceErrorException') { throw err; } else if (err.code === 'InvalidParameterException') { throw err; } else if (err.code === 'InvalidRequestException') { throw err; } else if (err.code === 'ResourceNotFoundException') { throw err; }
+  } else {
+    if ('SecretString' in data) {
+      let secret = data.SecretString;
+      dbCredential = JSON.parse(secret);
+    }
+  }
+});
+
 const pool = new Pool({
-  host: secrets.HOST,
-  user: secrets.USER,
-  password: secrets.DBENTRY,
-  database: secrets.DATABASE,
-  port: secrets.PORT
+  host: dbCredential.host,
+  user: dbCredential.username,
+  password: dbCredential.password,
+  database: dbCredential.dbname,
+  port: dbCredential.port
 });
 
 const updateTreatment = async (req) => {
   const vet = req.params.veteran_id;
   const treatmentIssues = req.body.treatmentIssues[0];
-  let i; let j; let k; let l; let m; let n; let o; let p = 0;
+  let i = 0;
   // physical health
   for (i = 0; i < treatmentIssues.physicalHealth.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
@@ -38,13 +57,13 @@ const updateTreatment = async (req) => {
     }
   }
   // mental health
-  for (j = 0; j < treatmentIssues.mentalHealth.length; j++) {
+  for (i = 0; i < treatmentIssues.mentalHealth.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.mentalHealth[j].goalid;
-    const goals = treatmentIssues.mentalHealth[j].goals;
-    const plans = treatmentIssues.mentalHealth[j].plans;
-    const strategies = treatmentIssues.mentalHealth[j].strategies;
-    const targetDate = treatmentIssues.mentalHealth[j].targetDate;
+    const goalId = treatmentIssues.mentalHealth[i].goalid;
+    const goals = treatmentIssues.mentalHealth[i].goals;
+    const plans = treatmentIssues.mentalHealth[i].plans;
+    const strategies = treatmentIssues.mentalHealth[i].strategies;
+    const targetDate = treatmentIssues.mentalHealth[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -62,13 +81,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Substance Use
-  for (k = 0; k < treatmentIssues.substanceUse.length; k++) {
+  for (i = 0; i < treatmentIssues.substanceUse.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.substanceUse[k].goalid;
-    const goals = treatmentIssues.substanceUse[k].goals;
-    const plans = treatmentIssues.substanceUse[k].plans;
-    const strategies = treatmentIssues.substanceUse[k].strategies;
-    const targetDate = treatmentIssues.substanceUse[k].targetDate;
+    const goalId = treatmentIssues.substanceUse[i].goalid;
+    const goals = treatmentIssues.substanceUse[i].goals;
+    const plans = treatmentIssues.substanceUse[i].plans;
+    const strategies = treatmentIssues.substanceUse[i].strategies;
+    const targetDate = treatmentIssues.substanceUse[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -86,13 +105,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Housing
-  for (l = 0; l < treatmentIssues.housing.length; l++) {
+  for (i = 0; i < treatmentIssues.housing.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.housing[l].goalid;
-    const goals = treatmentIssues.housing[l].goals;
-    const plans = treatmentIssues.housing[l].plans;
-    const strategies = treatmentIssues.housing[l].strategies;
-    const targetDate = treatmentIssues.housing[l].targetDate;
+    const goalId = treatmentIssues.housing[i].goalid;
+    const goals = treatmentIssues.housing[i].goals;
+    const plans = treatmentIssues.housing[i].plans;
+    const strategies = treatmentIssues.housing[i].strategies;
+    const targetDate = treatmentIssues.housing[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -110,13 +129,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Income/Financial/Legal
-  for (m = 0; m < treatmentIssues.incomeLegal.length; m++) {
+  for (i = 0; i < treatmentIssues.incomeLegal.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.incomeLegal[m].goalid;
-    const goals = treatmentIssues.incomeLegal[m].goals;
-    const plans = treatmentIssues.incomeLegal[m].plans;
-    const strategies = treatmentIssues.incomeLegal[m].strategies;
-    const targetDate = treatmentIssues.incomeLegal[m].targetDate;
+    const goalId = treatmentIssues.incomeLegal[i].goalid;
+    const goals = treatmentIssues.incomeLegal[i].goals;
+    const plans = treatmentIssues.incomeLegal[i].plans;
+    const strategies = treatmentIssues.incomeLegal[i].strategies;
+    const targetDate = treatmentIssues.incomeLegal[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -134,13 +153,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Relationships
-  for (n = 0; n < treatmentIssues.relationships.length; n++) {
+  for (i = 0; i < treatmentIssues.relationships.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.relationships[n].goalid;
-    const goals = treatmentIssues.relationships[n].goals;
-    const plans = treatmentIssues.relationships[n].plans;
-    const strategies = treatmentIssues.relationships[n].strategies;
-    const targetDate = treatmentIssues.relationships[n].targetDate;
+    const goalId = treatmentIssues.relationships[i].goalid;
+    const goals = treatmentIssues.relationships[i].goals;
+    const plans = treatmentIssues.relationships[i].plans;
+    const strategies = treatmentIssues.relationships[i].strategies;
+    const targetDate = treatmentIssues.relationships[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -158,13 +177,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Education
-  for (o = 0; o < treatmentIssues.education.length; o++) {
+  for (i = 0; i < treatmentIssues.education.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.education[o].goalid;
-    const goals = treatmentIssues.education[o].goals;
-    const plans = treatmentIssues.education[o].plans;
-    const strategies = treatmentIssues.education[o].strategies;
-    const targetDate = treatmentIssues.education[o].targetDate;
+    const goalId = treatmentIssues.education[i].goalid;
+    const goals = treatmentIssues.education[i].goals;
+    const plans = treatmentIssues.education[i].plans;
+    const strategies = treatmentIssues.education[i].strategies;
+    const targetDate = treatmentIssues.education[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
@@ -182,13 +201,13 @@ const updateTreatment = async (req) => {
     }
   }
   // Benefits/MedicAid/Snap
-  for (p = 0; p < treatmentIssues.benefits.length; p++) {
+  for (i = 0; i < treatmentIssues.benefits.length; i++) {
     let treatmentGoalObj; let treatmentPlanObj = null;
-    const goalId = treatmentIssues.benefits[p].goalid;
-    const goals = treatmentIssues.benefits[p].goals;
-    const plans = treatmentIssues.benefits[p].plans;
-    const strategies = treatmentIssues.benefits[p].strategies;
-    const targetDate = treatmentIssues.benefits[p].targetDate;
+    const goalId = treatmentIssues.benefits[i].goalid;
+    const goals = treatmentIssues.benefits[i].goals;
+    const plans = treatmentIssues.benefits[i].plans;
+    const strategies = treatmentIssues.benefits[i].strategies;
+    const targetDate = treatmentIssues.benefits[i].targetDate;
     if (goals) {
       treatmentGoalObj = [
         vet,
