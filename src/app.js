@@ -100,16 +100,17 @@ router.get('/getSecret', (req, res) => {
       { throw err; }
     } else {
       console.log('successss');
-      // Decrypts secret using the associated KMS key.
-      // Depending on whether the secret is a string or binary, one of these fields will be populated.
-      if ('SecretString' in data) {
-        secret = data.SecretString;
-        console.log('secret---->', secret);
-      } else {
-        const buff = new Buffer(data.SecretBinary, 'base64');
-        decodedBinarySecret = buff.toString('ascii');
-        console.log('secret---->', decodedBinarySecret);
-      }
+        // Decrypts secret using the associated KMS key.
+        // Depending on whether the secret is a string or binary, one of these fields will be populated.
+        if ('SecretString' in data) {
+            secret = data.SecretString;
+            console.log('secret---->',secret)
+        } else {
+            let buff = Buffer.from(data.SecretBinary, 'base64');
+            decodedBinarySecret = buff.toString('ascii');
+            console.log('secret---->',decodedBinarySecret)
+        }
+
     }
 
     res.json({
